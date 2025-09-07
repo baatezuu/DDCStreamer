@@ -40,14 +40,10 @@ Output executable + configs: `build_portable/portable/`.
 
 ## Run
 ```powershell
-```powershell
-# Using explicit config
+# Explicit config
 ./build_portable/portable/DDCStreamerApp.exe -c config.nested.sample.json
 
-# Auto-select (no -c): tries in order
-# 1. config.nested.sample.json
-# 2. config.sample.json
-# 3. config.json
+# Auto-select (no -c): order -> config.nested.sample.json, config.sample.json, config.json
 ./build_portable/portable/DDCStreamerApp.exe
 
 # Override UDP port
