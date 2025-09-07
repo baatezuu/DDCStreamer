@@ -1,0 +1,24 @@
+{
+  "device": "ACE0",
+  "channel_mask": 3,
+  "udp_host": "127.0.0.1",
+  "udp_port": 9870,
+  "output_rate_hz": 50.0,
+  "batch": true,
+  "csv_path": "telemetry.csv",
+  "simulation": true,
+  "sim_rate_hz": 50.0,
+  "sim_pattern": "random",
+  "streams": [
+    {
+      "name": "transfer_alignment",
+      "fields": [
+  { "name": "velocity", "rt": 5, "message": "17R", "words": [3,4], "lsb_exp": -7, "type": "float" },
+  { "name": "txaInit", "rt": 5, "message": "17R", "word": 6, "bit": 2, "lsb_exp": 0, "type": "raw" },
+  { "name": "altitude", "rt": 5, "message": "22R", "word": 9, "lsb_exp": -5, "type": "float" }
+  ,{ "name": "signed.example", "rt": 5, "message": "22R", "words": [10,11], "lsb_exp": 0, "type": "signed" }
+  ,{ "name": "ieee.value", "rt": 5, "message": "22R", "words": [12,13], "lsb_exp": 0, "type": "ieee754" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+# Build directories and artifacts
+build/
+CMakeFiles*/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+*.obj
+*.o
+*.a
+*.exe
+*.log
+
+# Generated CSV logs
+*telemetry.csv
+*_telemetry.csv
+
+# IDE / editor
+.vscode/
+
+# Local configuration overrides (add if you create one)
+config.local.json
+
+# Crash dumps / temp
+*.dmp
+*.tmp

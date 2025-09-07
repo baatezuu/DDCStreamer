@@ -1,0 +1,50 @@
+{
+  "device": "ACE0",
+  "channel_mask": 3,
+  "udp_host": "127.0.0.1",
+  "udp_port": 9870,
+  "output_rate_hz": 25.0,
+  "batch": true,
+  "simulation": true,
+  "sim_rate_hz": 100.0,
+  "sim_pattern": "increment",
+  "debug_stdout": true,
+  "csv_path": "nested_telemetry.csv",
+  "streams": [
+    {
+      "name": "production_metrics",
+      "fields": [
+        { "name": "production.line_1.speed",          "rt": 5,  "message": "17R", "words": [3,4],  "lsb_exp": -6, "type": "float" },
+        { "name": "production.line_1.efficiency",     "rt": 5,  "message": "17R", "word": 5,      "lsb_exp": -8, "type": "float" },
+        { "name": "production.line_1.state.flags.run", "rt": 5, "message": "17R", "word": 6,      "bit": 0,      "lsb_exp": 0,  "type": "raw" },
+        { "name": "production.line_1.state.flags.alarm","rt": 5, "message": "17R", "word": 6,     "bit": 1,      "lsb_exp": 0,  "type": "raw" },
+        { "name": "production.line_2.speed",          "rt": 5,  "message": "22R", "words": [2,3],  "lsb_exp": -6, "type": "float" },
+        { "name": "production.line_2.quality.yield",  "rt": 5,  "message": "22R", "word": 4,      "lsb_exp": -9, "type": "float" }
+      ]
+    },
+    {
+      "name": "environment",
+      "fields": [
+        { "name": "environment.floor.temperature",    "rt": 5,  "message": "17R", "word": 7,      "lsb_exp": -4, "type": "float" },
+        { "name": "environment.floor.humidity",       "rt": 5,  "message": "17R", "word": 8,      "lsb_exp": -7, "type": "float" },
+        { "name": "environment.control_room.temperature", "rt": 5, "message": "22R", "word": 5,  "lsb_exp": -4, "type": "float" }
+      ]
+    },
+    {
+      "name": "power",
+      "fields": [
+        { "name": "power.main.voltage",               "rt": 5,  "message": "22R", "word": 6,      "lsb_exp": -3, "type": "float" },
+        { "name": "power.main.current",               "rt": 5,  "message": "22R", "word": 7,      "lsb_exp": -5, "type": "float" },
+        { "name": "power.main.energy.total",          "rt": 5,  "message": "22R", "words": [8,9],  "lsb_exp": -10, "type": "signed" }
+      ]
+    },
+    {
+      "name": "advanced",
+      "fields": [
+        { "name": "advanced.telemetry.ieee.sampleA",  "rt": 5,  "message": "17R", "words": [9,10], "lsb_exp": 0,   "type": "ieee754" },
+        { "name": "advanced.telemetry.ieee.sampleB",  "rt": 5,  "message": "22R", "words": [10,11],"lsb_exp": 0,   "type": "ieee754" },
+        { "name": "advanced.flags.health.ok",         "rt": 5,  "message": "17R", "word": 11,     "bit": 3,      "lsb_exp": 0,   "type": "raw" }
+      ]
+    }
+  ]
+}
