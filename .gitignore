@@ -13,6 +13,7 @@ Makefile
 # Generated CSV logs
 *telemetry.csv
 *_telemetry.csv
+log_*.csv
 
 # IDE / editor
 .vscode/

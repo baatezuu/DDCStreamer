@@ -8,8 +8,7 @@
   "simulation": true,
   "sim_rate_hz": 100.0,
   "sim_pattern": "increment",
-  "debug_stdout": true,
-  "csv_path": "nested_telemetry.csv",
+  "csv_path": "auto",
   "streams": [
     {
       "name": "production_metrics",

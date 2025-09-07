@@ -28,6 +28,10 @@ cmake --build build -j 4
 ./build_portable.ps1 -Release   # Release portable build
 ./build_portable.ps1 -Clean -Release  # Clean rebuild
 ```
+
+### CSV otomatik adlandırma
+Config içinde `"csv_path": "auto"` kullanılırsa dosya adı `log_YYYYMMDD_HHMMSS.csv` formatında oluşturulur.
+Token desteği: `{Y}{m}{d}{H}{M}{S}` veya `{datetime}` (örn: `logs/run_{datetime}.csv`).
 Output executable + configs: `build_portable/portable/`.
 
 ### Notes

@@ -12,6 +12,8 @@
 #include "CsvLogger.hpp"
 #include <unordered_set>
 #include <fstream>
+#include <iomanip>
+#include <sstream>
 
 int main(int argc, char* argv[]) {
     std::string configPath = "config.json"; // legacy default name if present
@@ -66,13 +68,43 @@ int main(int argc, char* argv[]) {
     ddc::ExtractionEngine engine(cfg);
     ddc::CsvLogger csv;
     if(!cfg.csvPath.empty()) {
+        // Allow dynamic timestamp tokens in csv_path. Supported: {Y},{m},{d},{H},{M},{S} or {datetime}
+        auto now = std::chrono::system_clock::now();
+        std::time_t t = std::chrono::system_clock::to_time_t(now);
+        std::tm tm{}; 
+#if defined(_WIN32) && !defined(__MINGW32__)
+    gmtime_s(&tm, &t);
+#else
+    tm = *std::gmtime(&t);
+#endif
+        auto two = [](int v){ std::ostringstream o; o<<std::setw(2)<<std::setfill('0')<<v; return o.str(); };
+        std::string year = std::to_string(1900 + tm.tm_year);
+        std::string mon = two(1 + tm.tm_mon);
+        std::string day = two(tm.tm_mday);
+        std::string hour = two(tm.tm_hour);
+        std::string min = two(tm.tm_min);
+        std::string sec = two(tm.tm_sec);
+        auto replaceAll = [](std::string &s,const std::string& key,const std::string& val){ size_t pos=0; while((pos=s.find(key,pos))!=std::string::npos){ s.replace(pos,key.size(),val); pos+=val.size(); } };        
+        if (cfg.csvPath == "auto") {
+            std::ostringstream ds; ds<<year<<mon<<day<<"_"<<hour<<min<<sec; cfg.csvPath = "log_" + ds.str() + ".csv";        
+        } else if (cfg.csvPath.find('{') != std::string::npos) {
+            replaceAll(cfg.csvPath, "{Y}", year);
+            replaceAll(cfg.csvPath, "{m}", mon);
+            replaceAll(cfg.csvPath, "{d}", day);
+            replaceAll(cfg.csvPath, "{H}", hour);
+            replaceAll(cfg.csvPath, "{M}", min);
+            replaceAll(cfg.csvPath, "{S}", sec);
+            if (cfg.csvPath.find("{datetime}") != std::string::npos) {
+                std::ostringstream ds; ds<<year<<mon<<day<<"_"<<hour<<min<<sec; replaceAll(cfg.csvPath, "{datetime}", ds.str());
+            }
+        }
         // Collect full ordered field list for stable CSV header
         std::vector<std::string> allFields;
         for (auto &stream : cfg.streams) {
             for (auto &f : stream.fields) allFields.push_back(f.name);
         }
-        csv.setColumns(allFields);
-        csv.open(cfg.csvPath);
+    csv.setColumns(allFields);
+    csv.open(cfg.csvPath);
     }
 
     if(!monitor.open(cfg.device, cfg.channelMask)) { std::cerr << "Failed to open device" << std::endl; return 1; }

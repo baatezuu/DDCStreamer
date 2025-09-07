@@ -5,7 +5,7 @@
   "udp_port": 9870,
   "output_rate_hz": 50.0,
   "batch": true,
-  "csv_path": "telemetry.csv",
+  "csv_path": "auto",
   "simulation": true,
   "sim_rate_hz": 50.0,
   "sim_pattern": "random",
