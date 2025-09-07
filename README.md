@@ -15,16 +15,39 @@ MIL-STD-1553 monitor + JSON over UDP streamer skeleton for DDC aceXtreme hardwar
  - Sequence number (seq) alanı her paket için.
 
 ## Build
+### Standard (MinGW example)
 ```powershell
-# Configure (adjust -DDC_SDK_ROOT if needed)
-cmake -S . -B build -DDC_SDK_ROOT="C:/DDC/aceXtremeSDKv4.9.5"
-cmake --build build --config Release
+# Configure (adjust -DDC_SDK_ROOT if/when real SDK integrated)
+cmake -S . -B build -G "MinGW Makefiles" -DDC_SDK_ROOT="C:/DDC/aceXtremeSDK"
+cmake --build build -j 4
 ```
+
+### Portable static bundle (one-line)
+```powershell
+./build_portable.ps1    # Debug portable build + bundle
+./build_portable.ps1 -Release   # Release portable build
+./build_portable.ps1 -Clean -Release  # Clean rebuild
+```
+Output executable + configs: `build_portable/portable/`.
+
+### Notes
+- `SIMULATION_ONLY` and `PORTABLE_BUILD` are enabled in the portable script.
+- For MSVC static CRT: pass `-DPORTABLE_BUILD=ON -G "Visual Studio 17 2022"` and build Release.
 
 ## Run
 ```powershell
-Copy or edit config.sample.json -> config.json
-./build/Release/DDCStreamerApp.exe -c config.json
+```powershell
+# Using explicit config
+./build_portable/portable/DDCStreamerApp.exe -c config.nested.sample.json
+
+# Auto-select (no -c): tries in order
+# 1. config.nested.sample.json
+# 2. config.sample.json
+# 3. config.json
+./build_portable/portable/DDCStreamerApp.exe
+
+# Override UDP port
+./build_portable/portable/DDCStreamerApp.exe -p 9999
 ```
 
 ## JSON Message Example

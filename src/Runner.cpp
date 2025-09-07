@@ -11,21 +11,42 @@
 #include "ExtractionEngine.hpp"
 #include "CsvLogger.hpp"
 #include <unordered_set>
+#include <fstream>
 
 int main(int argc, char* argv[]) {
-    std::string configPath = "config.json";
+    std::string configPath = "config.json"; // legacy default name if present
+    bool userProvidedConfig = false;
     int overridePort = -1;
     for (int i=1;i<argc;++i) {
         std::string a = argv[i];
         if ((a == "-c" || a == "--config") && i+1 < argc) {
             configPath = argv[++i];
+            userProvidedConfig = true;
         } else if ((a == "-p" || a == "--port") && i+1 < argc) {
             try { overridePort = std::stoi(argv[++i]); } catch(...) { std::cerr << "Invalid port after " << a << "\n"; return 1; }
         } else if (a == "--help" || a == "-h") {
             std::cout << "Usage: DDCStreamerApp [-c config.json] [-p port]\n"
-                         "  -c, --config   Path to configuration JSON (default config.json)\n"
+                         "  -c, --config   Path to configuration JSON.\n"
+                         "                  If omitted, first existing is chosen from:\n"
+                         "                  config.nested.sample.json, config.sample.json, config.json\n"
                          "  -p, --port     Override UDP port (ignores udp_port in config)\n";
             return 0;
+        }
+    }
+
+    if (!userProvidedConfig) {
+        // Pick the first existing candidate; prefer nested sample.
+        const char* candidates[] = {"config.nested.sample.json", "config.sample.json", "config.json"};
+        bool picked = false;
+        for (auto c : candidates) {
+            std::ifstream f(c);
+            if (f.good()) { configPath = c; picked = true; break; }
+        }
+        if (!picked) {
+            std::cerr << "No configuration file found (looked for config.nested.sample.json, config.sample.json, config.json)." << std::endl;
+            return 1;
+        } else {
+            std::cout << "No -c provided; using default config: " << configPath << std::endl;
         }
     }
 
@@ -116,8 +137,7 @@ int main(int argc, char* argv[]) {
                     j[ev.name] = ev.numericValue;
                 }
                 std::string payload = j.dump();
-                bool ok = udp.send(payload);
-                    udp.send(payload);
+                udp.send(payload);
             }
         }
         if (!extracted.empty() && !cfg.csvPath.empty()) csv.writeValues(extracted);
@@ -134,8 +154,7 @@ int main(int argc, char* argv[]) {
                 if (!snap.empty()) {
                     snap["seq"] = seq.fetch_add(1, std::memory_order_relaxed);
                     std::string payload = snap.dump();
-                    bool ok = udp.send(payload);
-                        udp.send(payload);
+                    udp.send(payload);
                 }
                 std::this_thread::sleep_for(interval);
             }
