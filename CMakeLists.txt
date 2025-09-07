@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # User configurable options
 option(ENABLE_LOGGING "Enable spdlog logging" ON)
 option(SIMULATION_ONLY "Build without requiring DDC SDK libraries (simulation mode)" OFF)
+option(PORTABLE_BUILD "Produce a fully portable (self-contained) build" OFF)
 
 # DDC SDK root (adjust as needed)
 set(DDC_SDK_ROOT "C:/DDC/aceXtremeSDKv4.9.5" CACHE PATH "Path to DDC aceXtreme SDK root")
@@ -14,6 +15,27 @@ set(DDC_SDK_ROOT "C:/DDC/aceXtremeSDKv4.9.5" CACHE PATH "Path to DDC aceXtreme S
 if(NOT SIMULATION_ONLY)
     if(NOT EXISTS "${DDC_SDK_ROOT}/include")
         message(FATAL_ERROR "DDC SDK include directory not found at ${DDC_SDK_ROOT}/include. Set DDC_SDK_ROOT or enable SIMULATION_ONLY.")
+    endif()
+endif()
+
+# Apply static runtime / static link settings for a portable build
+if(PORTABLE_BUILD)
+    message(STATUS "Configuring portable build (static runtime/static linking where possible)")
+    if(MSVC)
+        # Use static MSVC runtime (/MT or /MTd)
+        if (CMAKE_VERSION VERSION_LESS 3.15)
+            foreach(flag_var CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE CMAKE_C_FLAGS_RELWITHDEBINFO CMAKE_C_FLAGS_MINSIZEREL
+                             CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE CMAKE_CXX_FLAGS_RELWITHDEBINFO CMAKE_CXX_FLAGS_MINSIZEREL)
+                if(${flag_var} MATCHES "/MD")
+                    string(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
+                endif()
+            endforeach()
+        else()
+            set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+        endif()
+    else()
+        # Attempt fully static link on MinGW / GCC
+        add_link_options(-static -static-libgcc -static-libstdc++)
     endif()
 endif()
 
@@ -74,6 +96,18 @@ target_link_libraries(DDCStreamerApp PRIVATE ddc_streamer)
 
 if(SIMULATION_ONLY)
     target_compile_definitions(ddc_streamer PRIVATE DDC_SIMULATION_ONLY=1)
+endif()
+
+# Bundle target to assemble a portable distribution directory
+if(PORTABLE_BUILD)
+    set(PORTABLE_DIR ${CMAKE_BINARY_DIR}/portable)
+    add_custom_target(portable_bundle
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${PORTABLE_DIR}
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:DDCStreamerApp> ${PORTABLE_DIR}/
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_SOURCE_DIR}/config.sample.json ${PORTABLE_DIR}/
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_SOURCE_DIR}/config.nested.sample.json ${PORTABLE_DIR}/
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_SOURCE_DIR}/README.md ${PORTABLE_DIR}/
+        COMMENT "Creating portable bundle in ${PORTABLE_DIR}" DEPENDS DDCStreamerApp)
 endif()
 
 # Install rules
